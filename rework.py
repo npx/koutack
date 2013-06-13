@@ -320,31 +320,6 @@ if __name__ == "__main__":
     # print the game field
     print emu.render(state)
 
-    # initialize GUI
-
-    from multiprocessing import Process, Queue
-    q = Queue()
-    def cb(x, solved=False):
-        q.put(x.getMap()) 
-
-    from gui import GUI
-    g = GUI(s,s)
-
     # solve!
-    def solve():
-        sol = KoutackSolver.solve(emu, state, cb)
-        print sol if sol else "No Solution found!"
-
-    thread = Process(target=solve)
-    thread.start()
-
-    def f():
-        try:
-            m = q.get(False)
-            g.map = m
-        except:
-            pass
-
-    g.schedule(f)
-    g.display()
-    
+    sol = KoutackSolver.solve(emu, state)
+    print sol if sol else "No Solution found!"
