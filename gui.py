@@ -14,7 +14,7 @@ class GUI(object):
 
         self.map = 'G'*(width*height)
 
-    
+
     def on_draw(self):
         self.window.clear()
         #print 'drawing',
@@ -34,7 +34,7 @@ class GUI(object):
 
     def redraw(self):
         self.window.invalid = True
-        #print 'redraw', 
+        #print 'redraw',
 
     def schedule(self, f, interval=None):
         if interval:
@@ -46,7 +46,7 @@ class GUI(object):
         pyglet.app.run()
 
 if __name__ == "__main__":
-    from rework import koutack, KoutackSolver
+    from koutack import koutack, KoutackSolver
     # map to play
     mymap, s = "..W.W...R...R..W#R#W.G.R.R.GGW#R#WR.RG.GR...W*.W..", 7
     #mymap, s = "G.G....G.", 3
@@ -63,7 +63,7 @@ if __name__ == "__main__":
     from multiprocessing import Process, Queue
     q = Queue()
     def cb(x, solved=False):
-        q.put(x.getMap()) 
+        q.put(x.getMap())
 
     from gui import GUI
     g = GUI(s,s)
@@ -87,4 +87,4 @@ if __name__ == "__main__":
     thread.start()
 
     solve()
-    
+
