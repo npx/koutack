@@ -13,7 +13,7 @@ class koutack(object):
     # valid map symbols
     __SYMBOLS__ = {'goal': "*",
                    'floor': ".",
-                   'tiles': "GR",  # sorted by priority (-.-")
+                   'tiles': "GR",
                    'joker': "W",
                    'special': "#"}
 
@@ -178,9 +178,12 @@ class koutack(object):
         return filter(lambda (x, y): 0 <= x <= h - 1 and 0 <= y <= w - 1, n)
 
     def copy(self, state):
+        """
+        Returns a copy of the given state. [copy of specials not necessary]
+        """
         return self.__state(state.getMap(), state.getGoal(),
-                            state.getSpecials(), state.getSize(),
-                            sol=state.getSolution())
+                            state.getSpecials()[:], state.getSize(),
+                            sol=state.getSolution()[:])
 
     def move(self, state, mv):
         """
@@ -289,7 +292,7 @@ class KoutackSolver(object):
                 copy = emu.copy(cur)
                 emu.move(copy, m)
                 if emu.isSolved(copy):
-                    if callback: 
+                    if callback:
                         callback(cur, solved=True)
                     return copy.getSolution()
                 if not copy.getMap() in done:
