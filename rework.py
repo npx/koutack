@@ -269,7 +269,7 @@ class KoutackSolver(object):
     Solver is supposed to solve the given State
     """
     @classmethod
-    def solve(self, emu, state):
+    def solve(self, emu, state, callback = None):
         """
         The solving algorithm.
         """
@@ -289,12 +289,16 @@ class KoutackSolver(object):
                 copy = emu.copy(cur)
                 emu.move(copy, m)
                 if emu.isSolved(copy):
+                    if callback: 
+                        callback(cur, solved=True)
                     return copy.getSolution()
                 if not copy.getMap() in done:
                     if not copy in todo:
+                        callback(cur, solved=False)
+                        #todo.append(copy)
                         todo.append(copy)
             done.add(cur.getMap())
-            print len(todo), len(done)
+            #print len(todo), len(done)
         return None
 
 
@@ -316,6 +320,31 @@ if __name__ == "__main__":
     # print the game field
     print emu.render(state)
 
+    # initialize GUI
+
+    from multiprocessing import Process, Queue
+    q = Queue()
+    def cb(x, solved=False):
+        q.put(x.getMap()) 
+
+    from gui import GUI
+    g = GUI(s,s)
+
     # solve!
-    sol = KoutackSolver.solve(emu, state)
-    print sol if sol else "No Solution found!"
+    def solve():
+        sol = KoutackSolver.solve(emu, state, cb)
+        print sol if sol else "No Solution found!"
+
+    thread = Process(target=solve)
+    thread.start()
+
+    def f():
+        try:
+            m = q.get(False)
+            g.map = m
+        except:
+            pass
+
+    g.schedule(f)
+    g.display()
+    
