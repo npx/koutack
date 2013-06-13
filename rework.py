@@ -269,7 +269,7 @@ class KoutackSolver(object):
     Solver is supposed to solve the given State
     """
     @classmethod
-    def solve(self, emu, state):
+    def solve(self, emu, state, callback = None):
         """
         The solving algorithm.
         """
@@ -289,12 +289,16 @@ class KoutackSolver(object):
                 copy = emu.copy(cur)
                 emu.move(copy, m)
                 if emu.isSolved(copy):
+                    if callback: 
+                        callback(cur, solved=True)
                     return copy.getSolution()
                 if not copy.getMap() in done:
                     if not copy in todo:
+                        callback(cur, solved=False)
+                        #todo.append(copy)
                         todo.append(copy)
             done.add(cur.getMap())
-            print len(todo), len(done)
+            #print len(todo), len(done)
         return None
 
 
