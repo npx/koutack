@@ -297,7 +297,8 @@ class KoutackSolver(object):
                     return copy.getSolution()
                 if not copy.getMap() in done:
                     if not copy in todo:
-                        callback(cur, solved=False)
+                        if callback:
+                            callback(cur, solved=False)
                         #todo.append(copy)
                         todo.append(copy)
             done.add(cur.getMap())
