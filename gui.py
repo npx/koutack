@@ -83,7 +83,10 @@ if __name__ == "__main__":
 
     g.schedule(f)
 
-    thread = Process(target=g.display)
+    def d():
+        g.display()
+
+    thread = Process(target=d)
     thread.start()
 
     solve()
