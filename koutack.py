@@ -1,8 +1,7 @@
 #!/usr/bin/env/python
 
 from sets import Set
-from collections import Counter
-import os
+
 
 class koutack(object):
     """
@@ -114,36 +113,57 @@ class koutack(object):
     def __validMove(self, state, mv):
         """
         Checks if a move is valid and returns the resulting Tile or None resp.
+
+        Implements the weird game logic. *sighs*
+
+        Copied the weird logic.
         """
-        # get neighboring "tiles"
-        nTiles = []
-        for n in self.__getNeighbors(state, mv):
-            t = state[n]
-            if t in self.__symbols("tiles"):
-                nTiles.append(t)
-        # at least 2 tiles need to be involved
-        if len(nTiles) < 2:
-            return None
-        # simple check to avoid the rest
-        if len(Set(nTiles)) == 1 and nTiles[0] in self.__symbols("colors"):
-            return nTiles[0]
-        # count occurences
-        counts = Counter(nTiles)
-        # remove joker (but keep count)
-        joker = counts.pop(self.__symbols("joker"), 0)
-        # check if it has been all whites (hence, empty now!)
-        if not counts:
-            return None
-        # get majority's number of occurences
-        maj = counts.most_common(1)[0][1]
-        # find all tiles with that number of occurences
-        candidates = [t for (t, v) in counts.iteritems() if v == maj]
-        # sort candidates by priority
-        prio = self.__symbols("colors")
-        priof = prio.find
-        candidates = sorted(candidates, key=priof)
-        if ((maj > 1) or ((maj == 1) and (joker))):
-            return candidates[0]
+        # preparation
+        n = self.__getNeighbors(state, mv, order=True)
+        tiles = self.__symbols("colors")
+        # let's goooo :|
+        tile = None
+        count = 0
+        if n["L"] is not None and state[n["L"]] in tiles:
+            count += 1
+            tile = state[n["L"]]
+            if n["R"] is not None and state[n["R"]] == tile:
+                count += 1
+
+        if n["T"] is not None and state[n["T"]] in tiles:
+            if state[n["T"]] == tile:
+                count += 1
+            else:
+                if count < 2:
+                    count = 1
+                    tile = state[n["T"]]
+
+        if n["R"] is not None and state[n["R"]] in tiles:
+            if state[n["R"]] == tile:
+                count += 1
+            else:
+                if count < 2:
+                    count = 1
+                    tile = state[n["R"]]
+
+        if n["B"] is not None and state[n["B"]] in tiles:
+            if state[n["B"]] == tile:
+                count += 1
+            else:
+                if count < 2:
+                    count = 1
+                    tile = state[n["B"]]
+                    if n["L"] is not None and state[n["L"]] == tile:
+                        count += 1
+        # handle jokers
+        if count > 0:
+            joker = self.__symbols("joker")
+            for d in "LTRB":
+                if n[d] is not None and state[n[d]] == joker:
+                    count += 1
+        # final check
+        if count >= 2:
+            return tile
         return None
 
     def getMoves(self, state):
@@ -168,14 +188,26 @@ class koutack(object):
         # got dem moves
         return moves
 
-    def __getNeighbors(self, state, coords):
+    def __getNeighbors(self, state, coords, order=False):
         """
         Returns the neighboring positions on the field.
         """
         w, h = state.getSize()
         x, y = coords
-        n = [(x + 1, y), (x, y + 1), (x - 1, y), (x, y - 1)]
-        return filter(lambda (x, y): 0 <= x <= h - 1 and 0 <= y <= w - 1, n)
+        n = {"L": (x - 1, y), "R": (x + 1, y),
+             "T": (x, y - 1), "B": (x, y + 1)}
+        # a filter: returns True if coords are on map
+        onMap = lambda (x, y): 0 <= x <= h - 1 and 0 <= y <= w - 1
+        # if there is no order required return neighbors on map
+        if not order:
+            r = n.itervalues()
+            return filter(onMap, r)
+        # else return dict to access properly >_>
+        else:
+            for (k, v) in n.iteritems():
+                if not onMap(v):
+                    n[k] = None
+            return n
 
     def copy(self, state):
         """
@@ -272,7 +304,7 @@ class KoutackSolver(object):
     Solver is supposed to solve the given State
     """
     @classmethod
-    def solve(self, emu, state, callback = None):
+    def solve(self, emu, state, callback=None):
         """
         The solving algorithm.
         """
@@ -287,6 +319,7 @@ class KoutackSolver(object):
         # loop
         while todo:
             cur = todo.pop(-1)
+            done.add(cur.getMap())
             moves = emu.getMoves(cur)
             for m in moves:
                 copy = emu.copy(cur)
@@ -296,13 +329,10 @@ class KoutackSolver(object):
                         callback(cur, solved=True)
                     return copy.getSolution()
                 if not copy.getMap() in done:
-                    if not copy in todo:
-                        if callback:
-                            callback(cur, solved=False)
-                        #todo.append(copy)
-                        todo.append(copy)
-            done.add(cur.getMap())
-            #print len(todo), len(done)
+                    done.add(copy.getMap())
+                    todo.append(copy)
+                    if callback:
+                        callback(cur, solved=False)
         return None
 
 
@@ -314,16 +344,48 @@ def myTimeit():
 
 if __name__ == "__main__":
     # map to play
-    mymap, s = "..W.W...R...R..W#R#W.G.R.R.GGW#R#WR.RG.GR...W*.W..", 7
-    #mymap, s = "G.G....G.", 3
+    maps = [
+        (".......G.........G.......", 5),
+        (".......G...G.G...GG......", 5),
+        ("......R.R..R.*....R.....R.", 5),
+        ("......GG..G..G....*.G..G..", 5),
+        (".....GGGGG.G*..G..G.......", 5),
+        (".R.R..R.R..*R...R..R..R.R.", 5),
+        (".G.G..G..GGG.*GG.G.G..G.G.", 5),
+        ("..R.....R..R*R.......RR.RR..R..", 5),
+        ("..G..G...G.G*GG...G....G..", 5),
+        ("........G..GGG.....GGG.*.G..GG.", 5),
+
+        ("..G...G#G........R.......", 5),
+        ("..G...G#G..R.R..G#G...G..", 5),
+        ("..R...R.R...#G..*.G...GG..", 5),
+        ("........RR.....*.R..G#.R..GGG...G....", 6),
+        ("......GGG.....GR#.#R.*RRR.", 5),
+        (".....#GRG.G*G#GG.GGG......", 5),
+        ("..RR..G...R.GG*G#R...RRR...RR........", 6),
+        ("....R....RR...*R#.R.G#.R...GR........", 6),
+        ("..G....G.GR..G.R.R.G.#*R..G.G....G...", 6),
+        ("...G...GGG...G#.R.GG*.#RR..GRR.......", 6),
+
+        ("..R........R.W...R.......", 5),
+        ("..R...R#G...W.....G......", 5),
+        ("..R....*.W..R#.G..RG......", 5),
+        ("......RW...*R#.R.RG.W..R..", 5),
+        ("..R....R.R....R#WG..*.R.G..G.G.......", 6),
+        (".......G..R...GR*...G.W..G.G#R..GGG..", 6),
+        ("........RGRR.RRW*R.R.#.#W.RWGG.......", 6),
+        ("...R.....R.R...R.G*..R.G#.G.R.W.WG.R..R.R.R...R...", 7),
+        (".........RWRR...G*.R...W.#.W...R.G...RRWGG........", 7),
+        ("..W.W...R...R..W#R#W.G.R.R.GGW#R#WR.RG.GR...W*.W..", 7)
+        ]
 
     # create emu and parse state
     emu = koutack()
-    state = emu.parse(mymap, s)
+    states = map(lambda (s, w): emu.parse(s, w), maps)
 
-    # print the game field
-    print emu.render(state)
-
-    # solve!
-    sol = KoutackSolver.solve(emu, state)
-    print sol if sol else "No Solution found!"
+    from time import time
+    t = time()
+    sol = KoutackSolver.solve(emu, states[-1])
+    dur = (time() - t * 1000)
+    print sol if sol else "No solution found!"
+    print dur, "ms"
