@@ -319,6 +319,7 @@ class KoutackSolver(object):
         # loop
         while todo:
             cur = todo.pop(-1)
+            done.add(cur.getMap())
             moves = emu.getMoves(cur)
             for m in moves:
                 copy = emu.copy(cur)
@@ -328,13 +329,10 @@ class KoutackSolver(object):
                         callback(cur, solved=True)
                     return copy.getSolution()
                 if not copy.getMap() in done:
-                    if not copy in todo:
-                        if callback:
-                            callback(cur, solved=False)
-                        #todo.append(copy)
-                        todo.append(copy)
-            done.add(cur.getMap())
-            #print len(todo), len(done)
+                    done.add(copy.getMap())
+                    todo.append(copy)
+                    if callback:
+                        callback(cur, solved=False)
         return None
 
 
@@ -384,3 +382,10 @@ if __name__ == "__main__":
     # create emu and parse state
     emu = koutack()
     states = map(lambda (s, w): emu.parse(s, w), maps)
+
+    from time import time
+    t = time()
+    sol = KoutackSolver.solve(emu, states[-1])
+    dur = (time() - t * 1000)
+    print sol if sol else "No solution found!"
+    print dur, "ms"
