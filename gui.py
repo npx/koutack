@@ -45,6 +45,22 @@ class GUI(object):
     def display(self):
         pyglet.app.run()
 
+
+def guiprocess(q):
+    from gui import GUI
+    g = GUI(s,s)
+
+    def f():
+        try:
+            m = q.get(False)
+            g.map = m
+        except:
+            pass
+
+    g.schedule(f)
+
+    g.display()
+
 if __name__ == "__main__":
     from koutack import koutack, KoutackSolver
     # map to play
@@ -65,8 +81,6 @@ if __name__ == "__main__":
     def cb(x, solved=False):
         q.put(x.getMap())
 
-    from gui import GUI
-    g = GUI(s,s)
 
     # solve!
     def solve():
@@ -74,19 +88,7 @@ if __name__ == "__main__":
         print sol if sol else "No Solution found!"
 
 
-    def f():
-        try:
-            m = q.get(False)
-            g.map = m
-        except:
-            pass
-
-    g.schedule(f)
-
-    def d():
-        g.display()
-
-    thread = Process(target=d)
+    thread = Process(target=guiprocess, args=(q,))
     thread.start()
 
     solve()
