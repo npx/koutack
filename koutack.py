@@ -56,9 +56,8 @@ class koutack(object):
             if not isinstance(key, tuple):
                 raise TypeError("Please use coordinates! (obj[x, y])")
             x, y = key
-            t = list(self.__map)
-            t[x * w + y] = value
-            self.__map = ''.join(t)
+            i = x*w + y
+            self.__map = '%s%s%s' % (self.__map[:i], value, self.__map[i+1:])
 
         def __getitem__(self, key):
             w, h = self.__size
