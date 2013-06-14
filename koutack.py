@@ -384,8 +384,10 @@ if __name__ == "__main__":
     states = map(lambda (s, w): emu.parse(s, w), maps)
 
     from time import time
-    t = time()
-    sol = KoutackSolver.solve(emu, states[-1])
-    dur = (time() - t * 1000)
-    print sol if sol else "No solution found!"
-    print dur, "ms"
+    for i, s in enumerate(states[:-1]):
+        t = time()
+        sol = KoutackSolver.solve(emu, s)
+        dur = time() - t
+        print "Level", i
+        print dur, "s"
+        print "-" * 10
