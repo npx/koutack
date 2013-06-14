@@ -46,7 +46,7 @@ class GUI(object):
         pyglet.app.run()
 
 
-def guiprocess(q):
+def guiprocess(s, q):
     from gui import GUI
     g = GUI(s,s)
 
@@ -88,7 +88,7 @@ if __name__ == "__main__":
         print sol if sol else "No Solution found!"
 
 
-    thread = Process(target=guiprocess, args=(q,))
+    thread = Process(target=guiprocess, args=(s, q,))
     thread.start()
 
     solve()
