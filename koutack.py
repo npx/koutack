@@ -346,17 +346,41 @@ def myTimeit():
 
 if __name__ == "__main__":
     # map to play
-    mymap, s = "..W.W...R...R..W#R#W.G.R.R.GGW#R#WR.RG.GR...W*.W..", 7
-    #mymap, s = "......GGG.....GR#.#R.*RRR.", 5
-    #mymap, s = "G.G....G.", 3
+    maps = [
+        (".......G.........G.......", 5),
+        (".......G...G.G...GG......", 5),
+        ("......R.R..R.*....R.....R.", 5),
+        ("......GG..G..G....*.G..G..", 5),
+        (".....GGGGG.G*..G..G.......", 5),
+        (".R.R..R.R..*R...R..R..R.R.", 5),
+        (".G.G..G..GGG.*GG.G.G..G.G.", 5),
+        ("..R.....R..R*R.......RR.RR..R..", 5),
+        ("..G..G...G.G*GG...G....G..", 5),
+        ("........G..GGG.....GGG.*.G..GG.", 5),
+
+        ("..G...G#G........R.......", 5),
+        ("..G...G#G..R.R..G#G...G..", 5),
+        ("..R...R.R...#G..*.G...GG..", 5),
+        ("........RR.....*.R..G#.R..GGG...G....", 6),
+        ("......GGG.....GR#.#R.*RRR.", 5),
+        (".....#GRG.G*G#GG.GGG......", 5),
+        ("..RR..G...R.GG*G#R...RRR...RR........", 6),
+        ("....R....RR...*R#.R.G#.R...GR........", 6),
+        ("..G....G.GR..G.R.R.G.#*R..G.G....G...", 6),
+        ("...G...GGG...G#.R.GG*.#RR..GRR.......", 6),
+
+        ("..R........R.W...R.......", 5),
+        ("..R...R#G...W.....G......", 5),
+        ("..R....*.W..R#.G..RG......", 5),
+        ("......RW...*R#.R.RG.W..R..", 5),
+        ("..R....R.R....R#WG..*.R.G..G.G.......", 6),
+        (".......G..R...GR*...G.W..G.G#R..GGG..", 6),
+        ("........RGRR.RRW*R.R.#.#W.RWGG.......", 6),
+        ("...R.....R.R...R.G*..R.G#.G.R.W.WG.R..R.R.R...R...", 7),
+        (".........RWRR...G*.R...W.#.W...R.G...RRWGG........", 7),
+        ("..W.W...R...R..W#R#W.G.R.R.GGW#R#WR.RG.GR...W*.W..", 7)
+        ]
 
     # create emu and parse state
     emu = koutack()
-    state = emu.parse(mymap, s)
-
-    # print the game field
-    print emu.render(state)
-
-    # solve!
-    sol = KoutackSolver.solve(emu, state)
-    print sol if sol else "No Solution found!"
+    states = map(lambda (s, w): emu.parse(s, w), maps)
