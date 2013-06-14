@@ -114,6 +114,8 @@ class koutack(object):
     def __validMove(self, state, mv):
         """
         Checks if a move is valid and returns the resulting Tile or None resp.
+
+        Implements the weird game logic. *sighs*
         """
         # get neighboring "tiles"
         nTiles = []
@@ -168,14 +170,23 @@ class koutack(object):
         # got dem moves
         return moves
 
-    def __getNeighbors(self, state, coords):
+    def __getNeighbors(self, state, coords, order=None):
         """
         Returns the neighboring positions on the field.
         """
         w, h = state.getSize()
         x, y = coords
-        n = [(x + 1, y), (x, y + 1), (x - 1, y), (x, y - 1)]
-        return filter(lambda (x, y): 0 <= x <= h - 1 and 0 <= y <= w - 1, n)
+        n = {"left": (x - 1, y), "right": (x + 1, y),
+             "top": (x, y - 1), "bottom": (x, y + 1)}
+        # determine order if necessary
+        r = None
+        if order is None:
+            r = n.itervalues()
+        else:
+            r = (n[s] for s in order)
+        # filter out of bounds and return
+        onMap = lambda (x, y): 0 <= x <= h - 1 and 0 <= y <= w - 1
+        return filter(onMap, r)
 
     def copy(self, state):
         """
